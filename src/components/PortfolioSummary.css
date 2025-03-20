@@ -1,0 +1,49 @@
+.portfolio-summary {
+    margin-top: 20px;
+  }
+  
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .summary-card {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .summary-card h3 {
+    margin-bottom: 10px;
+  }
+  
+  .summary-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .summary-change {
+    font-size: 1rem;
+  }
+  
+  .allocation-item {
+    margin-top: 10px;
+  }
+  
+  .allocation-label {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .allocation-bar {
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+  }
+  
+  .allocation-fill {
+    height: 100%;
+  }
+  
