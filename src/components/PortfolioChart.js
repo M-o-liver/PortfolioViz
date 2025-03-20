@@ -8,39 +8,34 @@ const PortfolioChart = ({ portfolioData }) => {
   useEffect(() => {
     if (!portfolioData || portfolioData.length === 0) return;
 
-    // Destroy previous chart if it exists
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
 
     const ctx = chartRef.current.getContext('2d');
     
-    // Extract dates and format them
     const dates = portfolioData.map(entry => new Date(entry.date).toLocaleDateString());
     
-    // Get unique symbols
     const symbols = Object.keys(portfolioData[0].position_values || {})
       .filter(symbol => symbol !== 'cash');
     
-    // Create datasets for each symbol and cash
     const datasets = [
       {
         label: 'Cash',
         data: portfolioData.map(entry => entry.cash),
-        borderColor: 'blue',
         backgroundColor: 'rgba(0, 0, 255, 0.1)',
+        borderColor: 'blue',
         fill: true,
       },
       ...symbols.map(symbol => ({
         label: symbol,
         data: portfolioData.map(entry => entry.position_values[symbol] || 0),
-        borderColor: getRandomColor(),
         backgroundColor: getRandomColor(0.1),
+        borderColor: getRandomColor(),
         fill: true,
       })),
     ];
 
-    // Create chart
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
@@ -69,9 +64,7 @@ const PortfolioChart = ({ portfolioData }) => {
           title: {
             display: true,
             text: 'Portfolio History',
-            font: {
-              size: 18,
-            },
+            font: { size: 18 },
           },
           tooltip: {
             mode: 'index',
@@ -88,7 +81,6 @@ const PortfolioChart = ({ portfolioData }) => {
     };
   }, [portfolioData]);
 
-  // Helper function to generate random colors
   function getRandomColor(alpha = 1) {
     const r = Math.floor(Math.random() * 255);
     const g = Math.floor(Math.random() * 255);
