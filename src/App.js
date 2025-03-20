@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import PortfolioChart from './components/PortfolioChart';
+import PortfolioSummary from './components/PortfolioSummary';
 import './styles.css';
 
 function App() {
   const [portfolioData, setPortfolioData] = useState(null);
+  const [portfolioStats, setPortfolioStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDataProcessed = (data) => {
+  const handleDataProcessed = (data, stats) => {
     setPortfolioData(data);
+    setPortfolioStats(stats);
+    setIsLoading(false);
+  };
+
+  const handleProcessingStart = () => {
+    setIsLoading(true);
   };
 
   return (
@@ -18,17 +27,28 @@ function App() {
       </header>
       
       <main>
-        <FileUpload onDataProcessed={handleDataProcessed} />
+        <FileUpload 
+          onDataProcessed={handleDataProcessed} 
+          onProcessingStart={handleProcessingStart}
+        />
         
-        {portfolioData && (
+        {isLoading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Analyzing your portfolio data...</p>
+          </div>
+        )}
+        
+        {portfolioData && portfolioStats && (
           <div className="results-container">
+            <PortfolioSummary stats={portfolioStats} />
             <PortfolioChart portfolioData={portfolioData} />
           </div>
         )}
       </main>
       
       <footer>
-        <p>© 2025 Portfolio Visualizer</p>
+        <p>© 2025 Portfolio Visualizer | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
       </footer>
     </div>
   );

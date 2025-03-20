@@ -1,48 +1,3 @@
-import logging
-import azure.functions as func
-import pandas as pd
-import json
-from io import StringIO
-from datetime import datetime
-import numpy as np
-
-def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Processing transaction file')
-    
-    try:
-        # Get the uploaded file
-        file = req.files.get('file')
-        if not file:
-            return func.HttpResponse(
-                "No file provided",
-                status_code=400
-            )
-        
-        # Read file content
-        file_content = file.read().decode('utf-8')
-        
-        # Parse CSV into DataFrame
-        df = pd.read_csv(StringIO(file_content))
-        
-        # Process transactions
-        portfolio_history = process_transactions(df)
-        
-        # Convert dates to string format for JSON serialization
-        for entry in portfolio_history:
-            entry['date'] = entry['date'].strftime('%Y-%m-%d')
-        
-        return func.HttpResponse(
-            json.dumps(portfolio_history),
-            mimetype="application/json"
-        )
-        
-    except Exception as e:
-        logging.error(f"Error processing file: {str(e)}")
-        return func.HttpResponse(
-            f"Error processing file: {str(e)}",
-            status_code=500
-        )
-
 def process_transactions(df):
     # Ensure date columns are datetime objects
     df['Transaction Date'] = pd.to_datetime(df['Transaction Date'])
@@ -54,7 +9,15 @@ def process_transactions(df):
     portfolio = {
         'cash': 0,
         'positions': {},
-        'history': []
+        'history': [],
+    }
+    
+    # Initialize statistics
+    stats = {
+        'totalContributions': 0,
+        'contributionCount': 0,
+        'totalDividends': 0,
+        'dividendCount': 0,
     }
     
     # Create a date range that includes all transaction dates
@@ -76,63 +39,92 @@ def process_transactions(df):
             latest_prices[symbol] = price
     
     # Process each date in the range
-    prev_date = None
     for date in date_range:
-        # Get transactions for this date
         day_transactions = df[df['Transaction Date'].dt.date == date.date()]
         
-        # If there are transactions on this date, process them
         if not day_transactions.empty:
-            for index, row in day_transactions.iterrows():
+            for _, row in day_transactions.iterrows():
                 action = row['Action']
                 symbol = row['Symbol'] if pd.notna(row['Symbol']) else ''
                 quantity = float(row['Quantity']) if pd.notna(row['Quantity']) else 0
-                price = float(row['Price']) if pd.notna(row['Price']) else 0
                 net_amount = float(row['Net Amount']) if pd.notna(row['Net Amount']) else 0
                 
-                # Update cash balance
-                if action == 'CON':  # Contribution
+                if action == 'CON':
                     portfolio['cash'] += abs(net_amount)
-                elif action == 'WDR':  # Withdrawal
-                    portfolio['cash'] -= abs(net_amount)
+                    stats['totalContributions'] += abs(net_amount)
+                    stats['contributionCount'] += 1
+                
+                elif action == 'DIV':
+                    portfolio['cash'] += net_amount
+                    stats['totalDividends'] += net_amount
+                    stats['dividendCount'] += 1
+                
                 elif action in ['Buy', 'Sell']:
-                    portfolio['cash'] -= net_amount  # Net already includes sign
+                    portfolio['cash'] -= net_amount
                     
-                    # Update positions
                     if symbol not in portfolio['positions']:
                         portfolio['positions'][symbol] = 0
-                        
+                    
                     if action == 'Buy':
                         portfolio['positions'][symbol] += quantity
                     elif action == 'Sell':
                         portfolio['positions'][symbol] -= quantity
                     
-                    # Update latest price
                     if price > 0:
                         latest_prices[symbol] = price
-                        
-                elif action == 'DIV':  # Dividend
-                    portfolio['cash'] += net_amount
-                elif action == 'FXT':  # FX Transaction
-                    portfolio['cash'] += net_amount
         
-        # Calculate position values using the latest known prices
-        position_values = {}
-        for symbol, quantity in portfolio['positions'].items():
-            if quantity > 0 and symbol in latest_prices:
-                position_values[symbol] = quantity * latest_prices[symbol]
+        position_values = {
+            sym: qty * latest_prices.get(sym, 0)
+            for sym, qty in portfolio['positions'].items()
+            if qty > 0
+        }
         
-        # Only add to history if this is a new date or there were transactions
-        if prev_date != date.date() or not day_transactions.empty:
-            # Record portfolio snapshot
-            portfolio['history'].append({
-                'date': date,
-                'cash': portfolio['cash'],
-                'positions': portfolio['positions'].copy(),
-                'position_values': position_values.copy(),
-                'total_value': portfolio['cash'] + sum(position_values.values())
-            })
-            
-        prev_date = date.date()
+        total_value = portfolio['cash'] + sum(position_values.values())
+        
+        portfolio['history'].append({
+            'date': date,
+            'cash': portfolio['cash'],
+            'positions': portfolio['positions'].copy(),
+            'position_values': position_values.copy(),
+            'total_value': total_value,
+        })
     
-    return portfolio['history']
+    # Calculate final statistics for allocation and total return
+    current_value = sum(
+        qty * latest_prices.get(sym, 0)
+        for sym, qty in portfolio['positions'].items()
+    ) + portfolio['cash']
+    
+    allocation = [
+        {
+            'symbol': sym,
+            'percentage': (qty * latest_prices.get(sym, 0)) / current_value * 100,
+            'color': get_color_for_symbol(sym),
+        }
+        for sym, qty in portfolio['positions'].items()
+        if qty > 0
+    ]
+    
+    total_return = ((current_value - stats["totalContributions"]) / stats["totalContributions"]) * 100
+    
+    return {
+        "history": portfolio["history"],
+        "stats": {
+            "currentValue": current_value,
+            "totalReturn": total_return,
+            "totalContributions": stats["totalContributions"],
+            "contributionCount": stats["contributionCount"],
+            "totalDividends": stats["totalDividends"],
+            "dividendCount": stats["dividendCount"],
+            "allocation": allocation,
+        },
+    }
+
+
+def get_color_for_symbol(symbol):
+    """Generate consistent colors for symbols."""
+    color_palette = [
+        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
+    ]
+    
+    return color_palette[hash(symbol) % len(color_palette)]
