@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
-import 'chartjs-adapter-date-fns';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
