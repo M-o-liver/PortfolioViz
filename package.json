@@ -13,7 +13,7 @@
       "react-dom": "^18.2.0",
       "react-scripts": "5.0.1",
       "highcharts": "^10.3.3",
-      "highcharts-react-official": "^3.0.0",
+      "highcharts-react-official": "^3.0.0"
     },
     "browserslist": {
       "production": [
