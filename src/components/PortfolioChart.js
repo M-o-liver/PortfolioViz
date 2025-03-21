@@ -2,26 +2,19 @@ import React, { useEffect, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
-const PortfolioChart = () => {
+const PortfolioChart = ({ portfolioData }) => {
   const [chartData, setChartData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/ProcessTransactions');
-        const data = await response.json();
-        if (!data.portfolio_summary || !data.portfolio_summary.cumulative_portfolio_value || !data.portfolio_summary.dates) {
-          throw new Error('Invalid data structure from API');
-        }
-        setChartData(data.portfolio_summary);
-      } catch (err) {
-        setError(err.message);
+    if (portfolioData) {
+      if (!portfolioData.portfolio_summary || !portfolioData.portfolio_summary.cumulative_portfolio_value || !portfolioData.portfolio_summary.dates) {
+        setError('Invalid data structure from API');
+      } else {
+        setChartData(portfolioData.portfolio_summary);
       }
-    };
-
-    fetchData();
-  }, []);
+    }
+  }, [portfolioData]);
 
   if (error) {
     return <div>Error: {error}</div>;
