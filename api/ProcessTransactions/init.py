@@ -110,5 +110,5 @@ def process_transactions(df):
 
     return portfolio['history'], {
         'cumulative_portfolio_value': cumulative_portfolio_value,
-        'dates': dates
+        'dates': [d.strftime('%Y-%m-%d') for d in dates]
     }
