@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import FileUpload from './FileUpload';
-import PortfolioChart from './PortfolioChart';
-import PortfolioSummary from './PortfolioSummary';
+import FileUpload from './components/FileUpload';
+import PortfolioChart from './components/PortfolioChart';
+import PortfolioSummary from './components/PortfolioSummary';
 import './styles.css';
 
 function App() {
