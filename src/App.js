@@ -69,9 +69,11 @@ function App() {
             />
           </div>
         )}
+      </main> {/* Added closing tag here */}
+
+      <footer>
+        <p>© 2025 Portfolio Visualizer | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
       </footer>
     </div>
   );
 }
-
-export default App;
