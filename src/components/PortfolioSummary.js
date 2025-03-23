@@ -1,52 +1,53 @@
 import React from 'react';
-import './PortfolioSummary.css'; // Optional: Add styles for better presentation
+import './PortfolioSummary.css';
 
-const PortfolioSummary = ({ stats }) => {
+export default function PortfolioSummary({ stats }) {
+  if (!stats) return null;
+
   return (
     <div className="portfolio-summary">
-      <h2>Portfolio Insights</h2>
-      
-      <div className="summary-grid">
-        {/* Current Value */}
-        <div className="summary-card">
-          <h3>Current Value</h3>
-          <p className="summary-value">
-            ${stats.currentValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <p 
-            className="summary-change" 
-            style={{ color: stats.totalReturn >= 0 ? 'green' : 'red' }}
-          >
-            {stats.totalReturn >= 0 ? '↑' : '↓'} {Math.abs(stats.totalReturn).toFixed(2)}%
-          </p>
+      <div className="summary-card">
+        <h3>Current Value</h3>
+        <div className="value">
+          ${stats.currentValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </div>
-
-        {/* Total Contributions */}
-        <div className="summary-card">
-          <h3>Total Contributions</h3>
-          <p className="summary-value">
-            ${stats.totalContributions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <p className="summary-subtext">{stats.contributionCount} deposits</p>
+        <div className={`change ${stats.totalReturn >= 0 ? 'positive' : 'negative'}`}>
+          {stats.totalReturn >= 0 ? '▲' : '▼'} 
+          {Math.abs(stats.totalReturn).toFixed(1)}%
         </div>
+      </div>
 
-        {/* Asset Allocation */}
-        <div className="summary-card">
-          <h3>Asset Allocation</h3>
-          {stats.allocation.map((item) => (
-            <div key={item.symbol} className="allocation-item">
-              <div className="allocation-label">
-                <span>{item.symbol}</span>
-                <span>{item.percentage.toFixed(1)}% (${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
+      <div className="summary-card">
+        <h3>Cost Basis</h3>
+        <div className="value">
+          ${stats.totalACB.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+        </div>
+        <div className="subtext">Total Invested</div>
+      </div>
+
+      <div className="summary-card allocation">
+        <h3>Asset Allocation</h3>
+        <div className="allocation-list">
+          {stats.allocation.map(asset => (
+            <div key={asset.symbol} className="allocation-item">
+              <div className="asset-header">
+                <span>{asset.symbol}</span>
+                <span>
+                  {(asset.value / stats.currentValue * 100).toFixed(1)}%
+                </span>
               </div>
-              <div className="allocation-bar">
+              <div className="progress-bar">
                 <div 
-                  className="allocation-fill" 
-                  style={{
-                    width: `${item.percentage}%`,
-                    backgroundColor: getColorForSymbol(item.symbol),
+                  className="progress-fill"
+                  style={{ 
+                    width: `${(asset.value / stats.currentValue * 100).toFixed(1)}%`,
+                    backgroundColor: getColor(asset.symbol)
                   }}
                 ></div>
+              </div>
+              <div className="asset-details">
+                <span>Value: ${Math.round(asset.value).toLocaleString()}</span>
+                <span>Cost: ${Math.round(asset.acb).toLocaleString()}</span>
               </div>
             </div>
           ))}
@@ -54,18 +55,15 @@ const PortfolioSummary = ({ stats }) => {
       </div>
     </div>
   );
-};
-
-// Helper function to assign colors to symbols
-function getColorForSymbol(symbol) {
-  const colorPalette = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-    '#FF9F40', '#C9CBCF', '#8E44AD', '#27AE60', '#F39C12',
-  ];
-  
-  // Generate a consistent color based on the symbol's hash
-  const hash = Array.from(symbol).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return colorPalette[hash % colorPalette.length];
 }
 
-export default PortfolioSummary;
+// Helper function for consistent colors
+const colors = [
+  '#0071A7', '#2ECC71', '#E67E22', '#9B59B6', '#34495E',
+  '#1ABC9C', '#E74C3C', '#F1C40F', '#95A5A6'
+];
+
+const getColor = (symbol) => {
+  const hash = Array.from(symbol).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
+};

@@ -1,49 +1,64 @@
 .portfolio-summary {
-    margin-top: 20px;
-  }
-  
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-  }
-  
-  .summary-card {
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .summary-card h3 {
-    margin-bottom: 10px;
-  }
-  
-  .summary-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  
-  .summary-change {
-    font-size: 1rem;
-  }
-  
-  .allocation-item {
-    margin-top: 10px;
-  }
-  
-  .allocation-label {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .allocation-bar {
-    height: 10px;
-    background-color: #e0e0e0;
-    border-radius: 5px;
-  }
-  
-  .allocation-fill {
-    height: 100%;
-  }
-  
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+.change {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.change.positive {
+  color: #2ecc71;
+}
+
+.change.negative {
+  color: #e74c3c;
+}
+
+.allocation-item {
+  margin: 10px 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.asset-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.asset-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
